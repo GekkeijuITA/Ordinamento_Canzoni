@@ -7,7 +7,6 @@ from tkinter.filedialog import askdirectory
 #SONGS_PATH = askdirectory(title = "Seleziona la cartella da cui prendere i file")
 SONGS_PATH = "Prova/"
 ext = ".txt"
-prefix = "0"
 i = 1
 # Definisci la lista delle canzoni
 for filename in os.listdir(SONGS_PATH):
@@ -15,15 +14,21 @@ for filename in os.listdir(SONGS_PATH):
     # checking if it is a file
     if os.path.isfile(f) and f.endswith(ext):
         #print(os.path.splitext(f))
-        fileName = os.path.splitext(f)[0].split("- ")[1]
-        
-        old_name = os.path.splitext(f)[0] + ext
-        
+        fileName = os.path.splitext(f)[0].split("/")[1]
+
         if(i < 10):
-            new_name = SONGS_PATH + prefix + prefix + str(i) + "_" +  fileName + ext
+            newPrefix = "py" + "00" + str(i)
         elif(i < 100):
-            new_name = SONGS_PATH + prefix + str(i) + "_" + fileName + ext
+            newPrefix = "py" + "0" + str(i)
         else: # MASSIMO DI 999 FILE
-            new_name = SONGS_PATH + str(i) + "_" +  fileName + ext
+            newPrefix = "py" + str(i)
+
+        old_name = os.path.splitext(f)[0] + ext
+
+        if("py" in fileName):
+            fileName = fileName.split("_")[1]
+
+        new_name = SONGS_PATH + newPrefix + "_" + fileName + ext
+
         os.rename(old_name, new_name)
         i += 1
