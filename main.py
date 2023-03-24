@@ -2,6 +2,7 @@ import os
 import random
 from tkinter import Tk
 from tkinter.filedialog import askdirectory
+import eyed3
 
 def shuffle(array):
     random.shuffle(array)
@@ -10,7 +11,7 @@ def shuffle(array):
 # Definisci il percorso della cartella delle canzoni
 #SONGS_PATH = askdirectory(title = "Seleziona la cartella da cui prendere i file")
 SONGS_PATH = "Prova/"
-ext = ".txt"
+ext = ".mp3"
 i = 1
 songs = []
 # Definisci la lista delle canzoni
@@ -19,6 +20,11 @@ for filename in os.listdir(SONGS_PATH):
     # checking if it is a file
     if os.path.isfile(f) and f.endswith(ext):
         songs.append(f)
+        # Get artist from f with eyed3
+        audiofile = eyed3.load(f)
+        print(audiofile)
+        print(audiofile.getArtist())
+        
 
 if len(songs) == 0:
     print("Nessuna canzone trovata")
