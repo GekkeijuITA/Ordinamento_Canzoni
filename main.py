@@ -8,8 +8,6 @@ def shuffle(array):
     random.shuffle(array)
     return array
 
-
-
 # Define songs's folder path
 #SONGS_PATH = askdirectory(title = "Seleziona la cartella da cui prendere i file")
 SONGS_PATH = "Prova/"
