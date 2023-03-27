@@ -1,5 +1,6 @@
 import os
 import random
+import re
 from tkinter import Tk
 from tkinter.filedialog import askdirectory
 
@@ -12,9 +13,11 @@ def shuffle(array):
 # Define songs's folder path
 #SONGS_PATH = askdirectory(title = "Seleziona la cartella da cui prendere i file")
 SONGS_PATH = "Prova/"
-ext = ".mp3"
+ext = ".txt"
+key = "py"
 i = 1
 songs = []
+
 # Define songs list
 for filename in os.listdir(SONGS_PATH):
     f = os.path.join(SONGS_PATH , filename)
@@ -33,19 +36,31 @@ for filename in songs:
     f = filename
     fileName = os.path.splitext(f)[0].split("/")[1]
 
+    # Split fileName into old prefix and rest of file name
+    if "_" in fileName:
+        oldPrefix, restName = fileName.split("_", maxsplit=1)
+    else:
+        oldPrefix, restName = "", fileName
+
+
     if(i < 10):
-        newPrefix = "py" + "00" + str(i)
+        newPrefix = key + "00" + str(i)
     elif(i < 100):
-        newPrefix = "py" + "0" + str(i)
+        newPrefix = key + "0" + str(i)
     else: # MAX 999 FILES
-        newPrefix = "py" + str(i)
+        newPrefix = key + str(i)
 
     old_name = os.path.splitext(f)[0] + ext
 
-    if("py" in fileName):
-        fileName = fileName.split("_")[1]
+    if(re.search(r'\b' + re.escape(key) + r'\b', fileName)):
+        # Key is present as whole word, so use only the new prefix
+        newPrefix += "_"
+        oldPrefix = ""
+    else:
+        # Key is not present as whole word, so keep the old prefix
+        newPrefix = oldPrefix.split(key)[0] + newPrefix + "_"
 
-    new_name = SONGS_PATH + newPrefix + "_" + fileName + ext
+    new_name = SONGS_PATH + newPrefix + restName + ext
 
     os.rename(old_name, new_name)
     i += 1
