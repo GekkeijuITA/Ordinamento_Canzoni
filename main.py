@@ -15,6 +15,7 @@ def shuffle(array):
 SONGS_PATH = "Prova/"
 ext = ".txt"
 key = "py"
+divisor = "%"
 i = 1
 songs = []
 
@@ -37,8 +38,8 @@ for filename in songs:
     fileName = os.path.splitext(f)[0].split("/")[1]
 
     # Split fileName into old prefix and rest of file name
-    if "_" in fileName:
-        oldPrefix, restName = fileName.split("_", maxsplit=1)
+    if divisor in fileName:
+        oldPrefix, restName = fileName.split(divisor, maxsplit=1)
     else:
         oldPrefix, restName = "", fileName
 
@@ -54,11 +55,11 @@ for filename in songs:
 
     if(re.search(r'\b' + re.escape(key) + r'\b', fileName)):
         # Key is present as whole word, so use only the new prefix
-        newPrefix += "_"
+        newPrefix += divisor
         oldPrefix = ""
     else:
         # Key is not present as whole word, so keep the old prefix
-        newPrefix = oldPrefix.split(key)[0] + newPrefix + "_"
+        newPrefix = oldPrefix.split(key)[0] + newPrefix + divisor
 
     new_name = SONGS_PATH + newPrefix + restName + ext
 
