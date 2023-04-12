@@ -4,6 +4,8 @@ import re
 from tkinter import Tk
 from tkinter.filedialog import askdirectory
 
+from tinytag import TinyTag
+
 def shuffle(array):
     random.shuffle(array)
     return array
@@ -11,11 +13,20 @@ def shuffle(array):
 # Define songs's folder path
 #SONGS_PATH = askdirectory(title = "Seleziona la cartella da cui prendere i file")
 SONGS_PATH = "Prova/"
-ext = ".txt"
-key = "py"
-divisor = "%"
+ext = ".mp3"
+key = ""
+divisor = "-"
 i = 1
 songs = []
+
+# Store artists name
+def storeArtists(fileName):
+    filemp3 = TinyTag.get(filename)
+    artist = filemp3.artist
+    if(artist == None):
+        print("Missing metadata")
+    else:
+        print("Artist:" + filemp3.artist)
 
 # Define songs list
 for filename in os.listdir(SONGS_PATH):
@@ -34,6 +45,7 @@ songs = shuffle(songs)
 for filename in songs:
     f = filename
     fileName = os.path.splitext(f)[0].split("/")[1]
+    storeArtists(f)
 
     # Split fileName into old prefix and rest of file name
     if divisor in fileName:
