@@ -11,7 +11,4 @@ for filename in os.listdir(SONGS_PATH):
         print(f + " not a file")
     else:
         if(TinyTag.get(f).artist == None):
-            print("Not every files has metadata: (" + f + ")")
-            exit
-        else:
-            print(TinyTag.get(f).artist)
+            print(f)
