@@ -1,7 +1,7 @@
 import os
-from tinytag import TinyTag
+import eyed3
 
-SONGS_PATH = "Canzoni/"
+SONGS_PATH = "Prova/"
 ext = ".mp3"
 
 for filename in os.listdir(SONGS_PATH):
@@ -10,8 +10,10 @@ for filename in os.listdir(SONGS_PATH):
     if not (os.path.isfile(f) and f.endswith(ext)):
         print(f + " not a file")
     else:
-        if(TinyTag.get(f).artist == None):
-            print("Not every files has metadata: (" + f + ")")
-            exit
+        audiofile = eyed3.load(f)
+        if audiofile.tag.artist is None:
+            artist = input("Per favore inserisci il nome dell'artista per questa canzone (%s): " %os.path.splitext(f)[0].split("/")[1])
+            audiofile.tag.artist = artist
+            audiofile.tag.save()
         else:
-            print(TinyTag.get(f).artist)
+            print(audiofile.tag.artist)
