@@ -1,8 +1,6 @@
 import os
 import random
 import re
-import customtkinter
-from customtkinter import filedialog
 import musicbrainzngs as mb
 from tinytag import TinyTag
 import time
@@ -10,6 +8,7 @@ import eyed3
 from tqdm import tqdm
 import urllib.request
 import logging
+
 eyed3.log.setLevel(logging.CRITICAL)
 
 def connect(host='http://google.com'):
@@ -21,7 +20,6 @@ def connect(host='http://google.com'):
 
 if not connect():
     print("No connection!")
-    exit()
 
 def sort(songs):
     """
@@ -81,7 +79,7 @@ def storeArtists(inputtemp):
 
 # Define songs's folder path
 #SONGS_PATH = filedialog.askdirectory("Seleziona la cartella da cui prendere i file")
-SONGS_PATH = "Canzoni/"
+SONGS_PATH = "Prova/"
 ext = ".mp3"
 key = ""
 divisor = "-"
@@ -97,12 +95,10 @@ for filename in os.listdir(SONGS_PATH):
     if os.path.isfile(f) and f.endswith(ext):
         print("Analazying: " + f + " ...")
         storeArtists(f)
-        #songs.append(f)
         
 
 if len(songsITA) == 0 or len(songsSTR) == 0:
     print("Nessuna canzone trovata")
-    exit()
 
 print("Shuffling songsITA")
 songsITA = sort(songsITA)
@@ -126,8 +122,6 @@ while songsITA or songsSTR:
 
 for song in songs:
     print(song)
-
-#songs = shuffle(songs)
 
 for filename in tqdm(songs):
     f = filename
