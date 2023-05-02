@@ -3,7 +3,6 @@ import eyed3
 import eyed3
 
 SONGS_PATH = "Prova/"
-SONGS_PATH = "Prova/"
 ext = ".mp3"
 
 for filename in os.listdir(SONGS_PATH):
