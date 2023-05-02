@@ -6,9 +6,22 @@ from customtkinter import filedialog
 import musicbrainzngs as mb
 from tinytag import TinyTag
 import time
-#import eyed3
+import eyed3
 from tqdm import tqdm
-import checkIfMetadata as cim
+import urllib.request
+import logging
+eyed3.log.setLevel(logging.CRITICAL)
+
+def connect(host='http://google.com'):
+    try:
+        urllib.request.urlopen(host) #Python 3.x
+        return True
+    except:
+        return False
+
+if not connect():
+    print("No connection!")
+    exit()
 
 def sort(songs):
     """
@@ -44,15 +57,23 @@ def storeArtists(inputtemp):
     #print(fileName)
     filemp3 = TinyTag.get(inputtemp)
     artist = filemp3.artist
-    """
-    if(artist == None):
+    if(artist == None or artist == ""):
         audiofile = eyed3.load(inputtemp)
         filenametemp = os.path.basename(inputtemp)
         artist = input("Per favore inserisci il nome dell'artista per questa canzone (" + filenametemp + "): ")
         audiofile.tag.artist = artist
         audiofile.tag.save()
-    """
-    if(searchArtist(artist)['area']['name'] == 'Italy'):
+
+    artist = searchArtist(artist)
+    if 'area' not in artist:
+        answ = input("Origine del cantante " + artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
+        while answ != 'i' and answ != 's':
+            answ = input("ERRORE, CARATTERE NON VALIDO! Origine del cantante " + artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
+        if answ == 'i':
+            songsITA.append(inputtemp)
+        elif answ == 's':
+            songsSTR.append(inputtemp)
+    elif(artist['area']['name'] == 'Italy'):
         songsITA.append(inputtemp)
     else:
         songsSTR.append(inputtemp)
@@ -60,7 +81,7 @@ def storeArtists(inputtemp):
 
 # Define songs's folder path
 #SONGS_PATH = filedialog.askdirectory("Seleziona la cartella da cui prendere i file")
-SONGS_PATH = "Prova/"
+SONGS_PATH = "Canzoni/"
 ext = ".mp3"
 key = ""
 divisor = "-"
