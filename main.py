@@ -12,25 +12,22 @@ import urllib.request
 import logging
 eyed3.log.setLevel(logging.CRITICAL)
 
-
 def connect(host='http://google.com'):
     try:
-        urllib.request.urlopen(host)  # Python 3.x
+        urllib.request.urlopen(host) #Python 3.x
         return True
     except:
         return False
-
 
 if not connect():
     print("No connection!")
     exit()
 
-
 def sort(songs):
     """
     Ordina un array di canzoni in modo che non ci siano due canzoni dello stesso artista in sequenza.
     """
-    random.shuffle(songs)  # mischia le canzoni in modo casuale
+    random.shuffle(songs) # mischia le canzoni in modo casuale
     sorted_songs = []
     last_artist = None
     for song in songs:
@@ -43,9 +40,8 @@ def sort(songs):
             return sort(songs)
     return sorted_songs
 
-
 def searchArtist(author):
-    time.sleep(2)  # NECESSARIO
+    time.sleep(2) # NECESSARIO
     # Imposta il tuo User-Agent
     mb.set_useragent("Ordinamento_Canzoni", "0.1")
     # Cerca gli artisti con il nome "The Beatles"
@@ -57,27 +53,22 @@ def searchArtist(author):
     return artist_info['artist']
 
 # Store artists name
-
-
 def storeArtists(inputtemp):
-    # print(fileName)
+    #print(fileName)
     filemp3 = TinyTag.get(inputtemp)
     artist = filemp3.artist
     if(artist == None or artist == ""):
         audiofile = eyed3.load(inputtemp)
         filenametemp = os.path.basename(inputtemp)
-        artist = input(
-            "Per favore inserisci il nome dell'artista per questa canzone (" + filenametemp + "): ")
+        artist = input("Per favore inserisci il nome dell'artista per questa canzone (" + filenametemp + "): ")
         audiofile.tag.artist = artist
         audiofile.tag.save()
 
     artist = searchArtist(artist)
     if 'area' not in artist:
-        answ = input("Origine del cantante " +
-                     artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
+        answ = input("Origine del cantante " + artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
         while answ != 'i' and answ != 's':
-            answ = input("ERRORE, CARATTERE NON VALIDO! Origine del cantante " +
-                         artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
+            answ = input("ERRORE, CARATTERE NON VALIDO! Origine del cantante " + artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
         if answ == 'i':
             songsITA.append(inputtemp)
         elif answ == 's':
@@ -86,7 +77,7 @@ def storeArtists(inputtemp):
         songsITA.append(inputtemp)
     else:
         songsSTR.append(inputtemp)
-
+    
 
 # Define songs's folder path
 #SONGS_PATH = filedialog.askdirectory("Seleziona la cartella da cui prendere i file")
@@ -97,7 +88,7 @@ divisor = "-"
 i = 1
 songs = []
 songsITA = []
-songsSTR = []
+songsSTR =[]
 
 # Define songs list
 for filename in os.listdir(SONGS_PATH):
@@ -106,8 +97,8 @@ for filename in os.listdir(SONGS_PATH):
     if os.path.isfile(f) and f.endswith(ext):
         print("Analazying: " + f + " ...")
         storeArtists(f)
-        # songs.append(f)
-
+        #songs.append(f)
+        
 
 if len(songsITA) == 0 or len(songsSTR) == 0:
     print("Nessuna canzone trovata")
@@ -169,4 +160,4 @@ for filename in tqdm(songs):
     new_name = SONGS_PATH + newPrefix + restName + ext
 
     os.rename(old_name, new_name)
-    i += 1
+    i += 1  
