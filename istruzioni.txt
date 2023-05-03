@@ -1,0 +1,10 @@
+## ISTRUZIONI PER USARE CORRETTAMENTE L'APPLICAZIONE ##
+1. Nella schermata principale premere per prima cosa il tasto in alto "Scegli cartella con le canzoni da ordinare"
+2. Una volta scelta la cartella il programma stamperà le canzoni trovate
+3. Premere il bottone in basso "Ordina canzoni" per iniziare il processo di ordinamento
+4. Sopra al bottone "Ordina canzoni" sarà scritto cosa sta facendo il programma in quel momento
+5. Una volta che ha completato l'operazione si troveranno le canzoni ordinate: italiane e straniere ordinate senza canzoni degli stessi autori vicini
+
+## INFORMAZIONI AGGIUNTIVE ##
+1. Se si vuole interrompere il processo è consigliabile farlo durante la fase di analisi dei file premendo la X in alto a destra (Windows) o in alto a sinistra (MacOs) (o in qualunque altro metodo disponibile per chiudere un'applicazione)
+2. A causa dei termini di uso delle API di MusicBrainz(database utilizzato per determinare la nazionalità dell'autore) il programma ci metterà circa 3 secondi per canzone per la fase di analisi

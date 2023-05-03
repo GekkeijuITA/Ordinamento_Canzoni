@@ -12,6 +12,7 @@ from tinytag import TinyTag
 import time
 from tqdm import tqdm
 import threading
+import sys
 
 SONGS_PATH = ""
 ext = ".mp3"
@@ -25,9 +26,9 @@ dialog = None
 textbox = None
 progressbar = None
 app = None
+button_2 = None
 
 eyed3.log.setLevel(logging.CRITICAL)
-
 
 def connect(host='http://google.com'):
     try:
@@ -47,6 +48,7 @@ class GUI_Thread(threading.Thread):
         global progressbar
         global app
         global labelProgress
+        global button_2
 
         # Modes: "System" (standard), "Dark", "Light"
         ctk.set_appearance_mode("dark")
@@ -97,7 +99,10 @@ class GUI_Thread(threading.Thread):
 
     def labelProgressUpdate(message , tot , countNum):
         labelProgress.configure(text=message + str(countNum) + "/" + str(tot))
-        progressbar.set(count/tot)
+        if tot != 0:
+            progressbar.set(count/tot)
+        else:
+            progressbar.set(0)
         app.update()
 
     def get_songs():
@@ -135,7 +140,6 @@ class GUI_Thread(threading.Thread):
         GUI_Thread.get_songs()
         GUI_Thread.write_textbox()
 
-
 class Logic_Thread:
 
     def __init__(self):
@@ -143,7 +147,7 @@ class Logic_Thread:
 
     def run(self):
         Logic_Thread.sortSongs()
-
+    
     def sort(songs):
         """
         Ordina un array di canzoni in modo che non ci siano due canzoni dello stesso artista in sequenza.
@@ -152,6 +156,7 @@ class Logic_Thread:
         sorted_songs = []
         last_artist = None
         count = 0
+
         for song in songs:
             current_artist = Logic_Thread.searchArtist(song)
             if last_artist != current_artist:
@@ -164,6 +169,7 @@ class Logic_Thread:
             songArray = "italiane"
             if(songs == songsSTR):
                 songArray = "straniere"
+
             GUI_Thread.labelProgressUpdate("Sto ordinando le canzoni " + songArray + ": ", len(songs) , count)
         return sorted_songs
 
@@ -188,24 +194,33 @@ class Logic_Thread:
         # print(fileName)
         filemp3 = TinyTag.get(inputtemp)
         artist = filemp3.artist
+        audiofile = eyed3.load(inputtemp)
+
+        if not audiofile.tag:
+            audiofile.initTag()
+
         if(artist == None or artist == ""):
-            audiofile = eyed3.load(inputtemp)
             filenametemp = os.path.basename(inputtemp)
-            artist = GUI_Thread.pop_up_input("Per favore inserisci il nome dell'artista per questa canzone (" + filenametemp + "): ")
-            #artist = input(
-            #    "Per favore inserisci il nome dell'artista per questa canzone (" + filenametemp + "): ")
+            artist = GUI_Thread.pop_up_input("Per favore inserisci il nome dell'artista per questa canzone (" + filenametemp + "): ") 
             audiofile.tag.artist = artist
             audiofile.tag.save()
 
+        artistInputTemp = artist
+        
         artist = Logic_Thread.searchArtist(artist)
+        while artist is None:
+            artist = GUI_Thread.pop_up_input("Chiedo scusa, non ho trovato nessun artista con questo nome(" + artistInputTemp + ") per questa canzone (" + filenametemp +  "), riprova: ")
+            artistInputTemp = artist
+            artist = Logic_Thread.searchArtist(artist)
+
+            if artist is not None:
+                audiofile.tag.artist = artist
+                audiofile.tag.save()
+
         if 'area' not in artist:
             answ = GUI_Thread.pop_up_input("Origine del cantante " + artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
-            #answ = input("Origine del cantante " +
-            #             artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
             while answ != 'i' and answ != 's':
                 answ = GUI_Thread.pop_up_input("ERRORE, CARATTERE NON VALIDO! Origine del cantante " + artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
-                #answ = input("ERRORE, CARATTERE NON VALIDO! Origine del cantante " +
-                #             artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
             if answ == 'i':
                 songsITA.append(inputtemp)
             elif answ == 's':
@@ -226,6 +241,8 @@ class Logic_Thread:
         global SONGS_PATH
         global count
 
+        button_2.configure(state="disabled")
+
         count = 0
 
         for song in songs:
@@ -243,6 +260,8 @@ class Logic_Thread:
         print("Shuffling songsSTR")
         songsSTR = Logic_Thread.sort(songsSTR)
 
+        songs.clear()
+        
         is_italian = True
         while songsITA or songsSTR:
             if len(songsITA) > 0:
@@ -258,15 +277,15 @@ class Logic_Thread:
             else:
                 is_italian = True
         
+        for song in songs:
+            print(song)
+
         count = 0
-        """
-        ERRORE, DUPLICA LE CANZONI SELEZIONATE
-        """
         for filename in songs:
             f = filename
             fileName = os.path.basename(f)
-            Logic_Thread.storeArtists(f)
 
+            #Logic_Thread.storeArtists(f)
             # Split fileName into old prefix and rest of file name
             if divisor in fileName:
                 oldPrefix, restName = fileName.split(divisor, maxsplit=1)
@@ -290,12 +309,14 @@ class Logic_Thread:
                 # Key is not present as whole word, so keep the old prefix
                 newPrefix = oldPrefix.split(key)[0] + newPrefix + divisor
 
-            new_name = SONGS_PATH + newPrefix + restName + ext
+            new_name = SONGS_PATH + "/" + newPrefix + restName
 
             os.rename(old_name, new_name)
             pref += 1
             count += 1
             GUI_Thread.labelProgressUpdate("Sto ordinando le canzoni: " , len(songs) , count)
+        labelProgress.configure(text="Operazione completata!")
+        button_2.configure(state="normal")
 
 # MAIN
 
