@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from customtkinter import filedialog
+import tkinter as tk
 import os
 import eyed3
 import urllib.request
@@ -10,6 +11,7 @@ import musicbrainzngs as mb
 from tinytag import TinyTag
 import time
 from tqdm import tqdm
+import threading
 
 SONGS_PATH = ""
 ext = ".mp3"
@@ -19,6 +21,10 @@ pref = 1
 songsITA = []
 songsSTR = []
 songs = []
+dialog = None
+textbox = None
+progressbar = None
+app = None
 
 eyed3.log.setLevel(logging.CRITICAL)
 
@@ -30,198 +36,275 @@ def connect(host='http://google.com'):
     except:
         return False
 
+class GUI_Thread(threading.Thread):
 
-def sort(songs):
-    """
-    Ordina un array di canzoni in modo che non ci siano due canzoni dello stesso artista in sequenza.
-    """
-    random.shuffle(songs)  # mischia le canzoni in modo casuale
-    sorted_songs = []
-    last_artist = None
-    for song in songs:
-        current_artist = searchArtist(song)
-        if last_artist != current_artist:
-            sorted_songs.append(song)
-            last_artist = current_artist
-        else:
-            random.shuffle(songs)
-            return sort(songs)
-    return sorted_songs
-
-
-def searchArtist(author):
-    time.sleep(2)  # NECESSARIO
-    # Imposta il tuo User-Agent
-    mb.set_useragent("Ordinamento_Canzoni", "0.1")
-    # Cerca gli artisti con il nome "The Beatles"
-    result = mb.search_artists(author)
-    # Recupera le informazioni sull'artista utilizzando il primo risultato della ricerca
-    artist_id = result["artist-list"][0]["id"]
-    artist_info = mb.get_artist_by_id(artist_id)
-    # Stampa il nome dell'artista e la sua nazionalità
-    return artist_info['artist']
-
-# Store artists name
-
-
-def storeArtists(inputtemp):
-    # print(fileName)
-    filemp3 = TinyTag.get(inputtemp)
-    artist = filemp3.artist
-    if(artist == None or artist == ""):
-        audiofile = eyed3.load(inputtemp)
-        filenametemp = os.path.basename(inputtemp)
-        artist = input(
-            "Per favore inserisci il nome dell'artista per questa canzone (" + filenametemp + "): ")
-        audiofile.tag.artist = artist
-        audiofile.tag.save()
-
-    artist = searchArtist(artist)
-    if 'area' not in artist:
-        answ = input("Origine del cantante " +
-                     artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
-        while answ != 'i' and answ != 's':
-            answ = input("ERRORE, CARATTERE NON VALIDO! Origine del cantante " +
-                         artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
-        if answ == 'i':
-            songsITA.append(inputtemp)
-        elif answ == 's':
-            songsSTR.append(inputtemp)
-    elif(artist['area']['name'] == 'Italy'):
-        songsITA.append(inputtemp)
-    else:
-        songsSTR.append(inputtemp)
-
-def sortSongs():
-    global pref
-    global songsITA
-    global songsSTR
-    global songs
-    global key
-    global divisor
-    global ext
-    global SONGS_PATH
-
-    if len(songsITA) == 0 or len(songsSTR) == 0:
-        print("Nessuna canzone trovata")
-        exit()
-
-    print("Shuffling songsITA")
-    songsITA = sort(songsITA)
-    print("Shuffling songsSTR")
-    songsSTR = sort(songsSTR)
-
-    is_italian = True
-    while songsITA or songsSTR:
-        if len(songsITA) > 0:
-            if is_italian:
-                songs.append(songsITA.pop(0))
-                is_italian = False
-        else:
-            is_italian = False
-        if len(songsSTR) > 0:
-            if not is_italian:
-                songs.append(songsSTR.pop(0))
-                is_italian = True
-        else:
-            is_italian = True
+    def __init__(self):
+        threading.Thread.__init__(self)
     
-    for filename in tqdm(songs):
-        f = filename
-        fileName = os.path.splitext(f)[0].split("/")[1]
-        storeArtists(f)
+    def run(self):
+        global dialog
+        global textbox
+        global progressbar
+        global app
+        global labelProgress
 
-        # Split fileName into old prefix and rest of file name
-        if divisor in fileName:
-            oldPrefix, restName = fileName.split(divisor, maxsplit=1)
+        # Modes: "System" (standard), "Dark", "Light"
+        ctk.set_appearance_mode("dark")
+        # Themes: "blue" (standard), "green", "dark-blue"
+        ctk.set_default_color_theme("blue")
+
+        app = ctk.CTk()
+        app.geometry("600x480")
+        app.title("Ordinamento Canzoni")
+
+        frame_1 = ctk.CTkFrame(master=app)
+        frame_1.pack(pady=20, padx=60, fill="both", expand=True)
+
+        label_1 = ctk.CTkLabel(
+            master=frame_1, justify=ctk.LEFT, text="Ordina canzoni", font=("Roboto", 24))
+        label_1.pack(pady=10, padx=10)
+
+        # SCELTA CANZONI
+
+        button_1 = ctk.CTkButton(
+            master=app, command=GUI_Thread.choose_folder, text="Scegli cartella con le canzoni da ordinare")
+        button_1.pack(pady=10, padx=10)
+
+        textbox = ctk.CTkTextbox(master=app)
+        textbox.pack(pady=10, padx=10, fill="both", expand=True)
+
+        # BARRA PROGRESSO
+        labelProgress = ctk.CTkLabel(master=app , text="0/0")
+        labelProgress.pack(pady=10, padx=10)
+        progressbar = ctk.CTkProgressBar(master=app)
+        progressbar.pack(padx=20, pady=10)
+        progressbar.set(0)
+
+        button_2 = ctk.CTkButton(master=app , command=Logic_Thread.sortSongs , text="Ordina canzoni")
+        button_2.pack(pady=10, padx=10)
+
+        # SCELTA DESTINAZIONE, FUSIONE E ORDINAMENTO
+
+        app.mainloop()
+
+        pass
+
+    def pop_up(message , title):
+        global dialog
+        dialog = ctk.CTkInputDialog(text=message, title=title)
+        dialog.get_input()
+
+
+    def labelProgressUpdate(message , tot , countNum):
+        labelProgress.configure(text=message + str(countNum) + "/" + str(tot))
+        progressbar.set(count/tot)
+        app.update()
+
+    def get_songs():
+        for filename in os.listdir(SONGS_PATH):
+            f = os.path.join(SONGS_PATH, filename)
+            if os.path.isfile(f) and f.endswith(ext):
+                songs.append(f)
+
+
+    def get_title(path):
+        return os.path.basename(path)
+
+
+    def write_textbox():
+        i = 0
+        textbox.configure(state="normal")
+        textbox.delete(1.0, "end")
+        if len(songs) == 0:
+            textbox.insert("1.0", "Nessuna canzone trovata")
         else:
-            oldPrefix, restName = "", fileName
+            for song in songs:
+                textbox.insert(str(i)+".0", "• " + GUI_Thread.get_title(song)+"\n")
+        textbox.configure(state="disabled")
+        labelProgress.configure(text="0/" + str(len(songs)))
 
-        if(pref < 10):
-            newPrefix = key + "00" + str(pref)
-        elif(pref < 100):
-            newPrefix = key + "0" + str(pref)
-        else:  # MAX 999 FILES
-            newPrefix = key + str(pref)
+    def pop_up_input(message):
+        global dialog
+        dialog = ctk.CTkInputDialog(text=message, title="Attenzione!")
+        return dialog.get_input()
+    
+    def choose_folder():
+        global SONGS_PATH
+        SONGS_PATH = filedialog.askdirectory()
+        songs.clear()
+        GUI_Thread.get_songs()
+        GUI_Thread.write_textbox()
 
-        old_name = os.path.splitext(f)[0] + ext
 
-        if(re.search(r'\b' + re.escape(key) + r'\b', fileName)):
-            # Key is present as whole word, so use only the new prefix
-            newPrefix += divisor
-            oldPrefix = ""
+class Logic_Thread:
+
+    def __init__(self):
+        threading.Thread.__init__(self)
+
+    def run(self):
+        Logic_Thread.sortSongs()
+
+    def sort(songs):
+        """
+        Ordina un array di canzoni in modo che non ci siano due canzoni dello stesso artista in sequenza.
+        """
+        random.shuffle(songs)  # mischia le canzoni in modo casuale
+        sorted_songs = []
+        last_artist = None
+        count = 0
+        for song in songs:
+            current_artist = Logic_Thread.searchArtist(song)
+            if last_artist != current_artist:
+                sorted_songs.append(song)
+                last_artist = current_artist
+            else:
+                random.shuffle(songs)
+                return Logic_Thread.sort(songs)
+            count += 1
+            songArray = "italiane"
+            if(songs == songsSTR):
+                songArray = "straniere"
+            GUI_Thread.labelProgressUpdate("Sto ordinando le canzoni " + songArray + ": ", len(songs) , count)
+        return sorted_songs
+
+
+    def searchArtist(author):
+        time.sleep(2)  # NECESSARIO
+        # Imposta il tuo User-Agent
+        mb.set_useragent("Ordinamento_Canzoni", "0.1")
+        # Cerca gli artisti con il nome "The Beatles"
+        result = mb.search_artists(author)
+        # Recupera le informazioni sull'artista utilizzando il primo risultato della ricerca
+        artist_id = result["artist-list"][0]["id"]
+        artist_info = mb.get_artist_by_id(artist_id)
+        # Stampa il nome dell'artista e la sua nazionalità
+        return artist_info['artist']
+
+    # Store artists name
+
+
+    def storeArtists(inputtemp):
+        global dialog
+        # print(fileName)
+        filemp3 = TinyTag.get(inputtemp)
+        artist = filemp3.artist
+        if(artist == None or artist == ""):
+            audiofile = eyed3.load(inputtemp)
+            filenametemp = os.path.basename(inputtemp)
+            artist = GUI_Thread.pop_up_input("Per favore inserisci il nome dell'artista per questa canzone (" + filenametemp + "): ")
+            #artist = input(
+            #    "Per favore inserisci il nome dell'artista per questa canzone (" + filenametemp + "): ")
+            audiofile.tag.artist = artist
+            audiofile.tag.save()
+
+        artist = Logic_Thread.searchArtist(artist)
+        if 'area' not in artist:
+            answ = GUI_Thread.pop_up_input("Origine del cantante " + artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
+            #answ = input("Origine del cantante " +
+            #             artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
+            while answ != 'i' and answ != 's':
+                answ = GUI_Thread.pop_up_input("ERRORE, CARATTERE NON VALIDO! Origine del cantante " + artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
+                #answ = input("ERRORE, CARATTERE NON VALIDO! Origine del cantante " +
+                #             artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
+            if answ == 'i':
+                songsITA.append(inputtemp)
+            elif answ == 's':
+                songsSTR.append(inputtemp)
+        elif(artist['area']['name'] == 'Italy'):
+            songsITA.append(inputtemp)
         else:
-            # Key is not present as whole word, so keep the old prefix
-            newPrefix = oldPrefix.split(key)[0] + newPrefix + divisor
+            songsSTR.append(inputtemp)
 
-        new_name = SONGS_PATH + newPrefix + restName + ext
+    def sortSongs():
+        global pref
+        global songsITA
+        global songsSTR
+        global songs
+        global key
+        global divisor
+        global ext
+        global SONGS_PATH
+        global count
 
-        os.rename(old_name, new_name)
-        pref += 1
+        count = 0
+
+        for song in songs:
+            count += 1
+            GUI_Thread.labelProgressUpdate("Analizzando le canzoni: " , len(songs) , count)
+            Logic_Thread.storeArtists(song)
+
+        if len(songsITA) == 0 or len(songsSTR) == 0:
+            print("Nessuna canzone trovata")
+            GUI_Thread.pop_up("Nessuna canzone trovata", "Attenzione!")
+            return
+
+        print("Shuffling songsITA")
+        songsITA = Logic_Thread.sort(songsITA)
+        print("Shuffling songsSTR")
+        songsSTR = Logic_Thread.sort(songsSTR)
+
+        is_italian = True
+        while songsITA or songsSTR:
+            if len(songsITA) > 0:
+                if is_italian:
+                    songs.append(songsITA.pop(0))
+                    is_italian = False
+            else:
+                is_italian = False
+            if len(songsSTR) > 0:
+                if not is_italian:
+                    songs.append(songsSTR.pop(0))
+                    is_italian = True
+            else:
+                is_italian = True
+        
+        count = 0
+        """
+        ERRORE, DUPLICA LE CANZONI SELEZIONATE
+        """
+        for filename in songs:
+            f = filename
+            fileName = os.path.basename(f)
+            Logic_Thread.storeArtists(f)
+
+            # Split fileName into old prefix and rest of file name
+            if divisor in fileName:
+                oldPrefix, restName = fileName.split(divisor, maxsplit=1)
+            else:
+                oldPrefix, restName = "", fileName
+
+            if(pref < 10):
+                newPrefix = key + "00" + str(pref)
+            elif(pref < 100):
+                newPrefix = key + "0" + str(pref)
+            else:  # MAX 999 FILES
+                newPrefix = key + str(pref)
+
+            old_name = os.path.splitext(f)[0] + ext
+
+            if(re.search(r'\b' + re.escape(key) + r'\b', fileName)):
+                # Key is present as whole word, so use only the new prefix
+                newPrefix += divisor
+                oldPrefix = ""
+            else:
+                # Key is not present as whole word, so keep the old prefix
+                newPrefix = oldPrefix.split(key)[0] + newPrefix + divisor
+
+            new_name = SONGS_PATH + newPrefix + restName + ext
+
+            os.rename(old_name, new_name)
+            pref += 1
+            count += 1
+            GUI_Thread.labelProgressUpdate("Sto ordinando le canzoni: " , len(songs) , count)
+
+# MAIN
 
 if not connect():
+    GUI_Thread.pop_up("Nessuna connessione a internet!" , "Errore")
     print("No connection!")
-    exit()
 
+gui = GUI_Thread()
+logic = Logic_Thread()
 
-# Modes: "System" (standard), "Dark", "Light"
-ctk.set_appearance_mode("dark")
-# Themes: "blue" (standard), "green", "dark-blue"
-ctk.set_default_color_theme("blue")
-
-app = ctk.CTk()
-app.geometry("600x480")
-app.title("Ordinamento Canzoni")
-
-
-def choose_folder():
-    global SONGS_PATH
-    SONGS_PATH = filedialog.askdirectory()
-    get_songs()
-    write_textbox()
-
-
-def get_songs():
-    for filename in os.listdir(SONGS_PATH):
-        f = os.path.join(SONGS_PATH, filename)
-
-        if os.path.isfile(f) and f.endswith(ext):
-            songs.append(f)
-            storeArtists(f)
-
-
-def get_title(path):
-    return os.path.basename(path)
-
-
-def write_textbox():
-    i = 0
-    textbox.configure(state="normal")
-    textbox.delete("1.0", "end")
-    for song in songs:
-        textbox.insert(str(i)+".0", "• " + get_title(song)+"\n")
-    textbox.configure(state="disabled")
-
-
-frame_1 = ctk.CTkFrame(master=app)
-frame_1.pack(pady=20, padx=60, fill="both", expand=True)
-
-label_1 = ctk.CTkLabel(
-    master=frame_1, justify=ctk.LEFT, text="Ordina canzoni", font=("Roboto", 24))
-label_1.pack(pady=10, padx=10)
-
-# SCELTA CANZONI
-
-button_1 = ctk.CTkButton(
-    master=app, command=choose_folder, text="Scegli cartella con le canzoni da ordinare")
-button_1.pack(pady=10, padx=10)
-
-textbox = ctk.CTkTextbox(master=app)
-textbox.pack(pady=10, padx=10, fill="both", expand=True)
-
-button_2 = ctk.CTkButton(master=app , command=sortSongs , text="Ordina canzoni")
-button_2.pack(pady=10, padx=10)
-
-# SCELTA DESTINAZIONE, FUSIONE E ORDINAMENTO
-
-app.mainloop()
+gui.run()
+logic.run()
