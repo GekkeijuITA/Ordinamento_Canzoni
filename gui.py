@@ -276,9 +276,6 @@ class Logic_Thread:
                     is_italian = True
             else:
                 is_italian = True
-        
-        for song in songs:
-            print(song)
 
         count = 0
         for filename in songs:
