@@ -1,3 +1,308 @@
 {
-    
+    "artists": [
+        {
+            "name": "Illangelo",
+            "area": "Foreign"
+        },
+        {
+            "name": "Mara Sattei",
+            "area": "Italy"
+        },
+        {
+            "name": "Tiromancino",
+            "area": "Italy"
+        },
+        {
+            "name": "Sia",
+            "area": "Foreign"
+        },
+        {
+            "name": "Tommaso Paradiso",
+            "area": "Italy"
+        },
+        {
+            "name": "Sangiovanni",
+            "area": "Italy"
+        },
+        {
+            "name": "Lewis Capaldi",
+            "area": "Foreign"
+        },
+        {
+            "name": "Tananai",
+            "area": "Italy"
+        },
+        {
+            "name": "Liam Gallagher",
+            "area": "Foreign"
+        },
+        {
+            "name": "Piero Pelù",
+            "area": "Italy"
+        },
+        {
+            "name": "Negramaro",
+            "area": "Italy"
+        },
+        {
+            "name": "The Weeknd",
+            "area": "Foreign"
+        },
+        {
+            "name": "Colapesce e Dimartino",
+            "area": "Italy"
+        },
+        {
+            "name": "Kodaline",
+            "area": "Foreign"
+        },
+        {
+            "name": "Mahmood",
+            "area": "Italy"
+        },
+        {
+            "name": "Ellie Goulding",
+            "area": "Foreign"
+        },
+        {
+            "name": "Alessandra Amoroso",
+            "area": "Italy"
+        },
+        {
+            "name": "Ermal Meta",
+            "area": "Italy"
+        },
+        {
+            "name": "James Arthur",
+            "area": "Foreign"
+        },
+        {
+            "name": "gIANMARIA",
+            "area": "Italy"
+        },
+        {
+            "name": "Salmo",
+            "area": "Italy"
+        },
+        {
+            "name": "Craig David",
+            "area": "Foreign"
+        },
+        {
+            "name": "Boomdabash",
+            "area": "Italy"
+        },
+        {
+            "name": "Madame",
+            "area": "Foreign"
+        },
+        {
+            "name": "The Killers",
+            "area": "Foreign"
+        },
+        {
+            "name": "Paola e Chiara",
+            "area": "Italy"
+        },
+        {
+            "name": "Pinguini Tattici Nucleari",
+            "area": "Italy"
+        },
+        {
+            "name": "I Cugini di campagna",
+            "area": "Italy"
+        },
+        {
+            "name": "Marco Mengoni",
+            "area": "Italy"
+        },
+        {
+            "name": "Måneskin",
+            "area": "Italy"
+        },
+        {
+            "name": "Fabrizio Moro",
+            "area": "Italy"
+        },
+        {
+            "name": "Bruno Mars",
+            "area": "Foreign"
+        },
+        {
+            "name": "Anna Oxa",
+            "area": "Italy"
+        },
+        {
+            "name": "Steve Jablonsky",
+            "area": "Foreign"
+        },
+        {
+            "name": "Fred De Palma",
+            "area": "Italy"
+        },
+        {
+            "name": "Elodie",
+            "area": "Foreign"
+        },
+        {
+            "name": "Ed Sheeran",
+            "area": "Foreign"
+        },
+        {
+            "name": "Massimo Ranieri",
+            "area": "Italy"
+        },
+        {
+            "name": "Tom Walker",
+            "area": "Foreign"
+        },
+        {
+            "name": "DJ Snake",
+            "area": "Foreign"
+        },
+        {
+            "name": "Lazza",
+            "area": "Italy"
+        },
+        {
+            "name": "Biagio Antonacci",
+            "area": "Italy"
+        },
+        {
+            "name": "Irama",
+            "area": "Italy"
+        },
+        {
+            "name": "Elettra Lamborghini",
+            "area": "Italy"
+        },
+        {
+            "name": "Modà",
+            "area": "Italy"
+        },
+        {
+            "name": "Jessie J",
+            "area": "Foreign"
+        },
+        {
+            "name": "Blanco",
+            "area": "Foreign"
+        },
+        {
+            "name": "Mr. Rain",
+            "area": "Italy"
+        },
+        {
+            "name": "Harry Styles",
+            "area": "Foreign"
+        },
+        {
+            "name": "Annalisa",
+            "area": "Italy"
+        },
+        {
+            "name": "Marracash",
+            "area": "Italy"
+        },
+        {
+            "name": "Darin",
+            "area": "Foreign"
+        },
+        {
+            "name": "Will Tura",
+            "area": "Foreign"
+        },
+        {
+            "name": "CNCO",
+            "area": "Foreign"
+        },
+        {
+            "name": "Achille Lauro",
+            "area": "Italy"
+        },
+        {
+            "name": "Leo Gassmann",
+            "area": "Italy"
+        },
+        {
+            "name": "LDA",
+            "area": "Italy"
+        },
+        {
+            "name": "Max Gazzè",
+            "area": "Italy"
+        },
+        {
+            "name": "Tiziano Ferro",
+            "area": "Italy"
+        },
+        {
+            "name": "Tom Morello",
+            "area": "Foreign"
+        },
+        {
+            "name": "Olly",
+            "area": "Italy"
+        },
+        {
+            "name": "Ferris Wheels",
+            "area": "Foreign"
+        },
+        {
+            "name": "Lady Gaga",
+            "area": "Foreign"
+        },
+        {
+            "name": "Levante",
+            "area": "Italy"
+        },
+        {
+            "name": "Fedez",
+            "area": "Italy"
+        },
+        {
+            "name": "Imagine Dragons",
+            "area": "Foreign"
+        },
+        {
+            "name": "Lu-Ni",
+            "area": "Foreign"
+        },
+        {
+            "name": "Jovanotti",
+            "area": "Italy"
+        },
+        {
+            "name": "Culture Shock",
+            "area": "Foreign"
+        },
+        {
+            "name": "Rosa Chemical",
+            "area": "Italy"
+        },
+        {
+            "name": "Purple Disco Machine",
+            "area": "Foreign"
+        },
+        {
+            "name": "Lindsey Stirling",
+            "area": "Foreign"
+        },
+        {
+            "name": "La rappresentante di lista",
+            "area": "Italy"
+        },
+        {
+            "name": "Colapesce Dimartino",
+            "area": "Italy"
+        },
+        {
+            "name": "io2",
+            "area": "boh"
+        },
+        {
+            "name": "lui2",
+            "area": "marocchino"
+        }
+    ]
 }

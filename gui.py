@@ -13,6 +13,7 @@ import time
 from tqdm import tqdm
 import threading
 import sys
+import json
 
 SONGS_PATH = ""
 ext = ".mp3"
@@ -131,6 +132,7 @@ class GUI_Thread(threading.Thread):
     def pop_up_input(message):
         global dialog
         dialog = ctk.CTkInputDialog(text=message, title="Attenzione!")
+        ######## AUTOCOMPLETE HERE ########
         return dialog.get_input()
     
     def choose_folder():
@@ -186,9 +188,37 @@ class Logic_Thread:
         # Stampa il nome dell'artista e la sua nazionalità
         return artist_info['artist']
 
+    def searchInJson(string,fileName="artists.json"):
+        """
+        Cerca nel file json se è presente l'autore
+        """
+        print("Searching... " + re.sub('[^0-9a-zA-Z]+',' ',string))
+        file = open(fileName)
+        data = json.load(file)
+        index = 0
+        for i in data["artists"]:
+            if re.search(re.sub('[^0-9a-zA-Z]+',' ',string), i["name"], re.IGNORECASE):
+                return index
+            index += 1
+        return -1
+
+    def addArtistToJson(name,country,fileName="artists.json"):
+        """
+        Aggiunge l'artista nella nostra "cache" senza ripetizioni
+        """
+        with open(fileName,'r+',encoding='utf-8') as file:
+            file_data = json.load(file)
+            alreadyIn = False
+            for tuple in file_data["artists"]:
+                if tuple["name"] == name:
+                    alreadyIn = True
+                    break
+            if not alreadyIn:
+                file_data["artists"].append({"name":name,"area":country})
+                file.seek(0)
+                json.dump(file_data,file,indent=4,ensure_ascii=False)
+
     # Store artists name
-
-
     def storeArtists(inputtemp):
         global dialog
         # print(fileName)
@@ -199,36 +229,56 @@ class Logic_Thread:
         if not audiofile.tag:
             audiofile.initTag()
 
+        file = open("artists.json")
+        data = json.load(file)
+
         if(artist == None or artist == ""):
             filenametemp = os.path.basename(inputtemp)
-            artist = GUI_Thread.pop_up_input("Per favore inserisci il nome dell'artista per questa canzone (" + filenametemp + "): ") 
-            audiofile.tag.artist = artist
+            index = Logic_Thread.searchInJson(filenametemp)
+            if index != -1:
+                audiofile.tag.artist = data["artists"][index]["name"]
+            else:    
+                artist = GUI_Thread.pop_up_input("Per favore inserisci il nome dell'artista per questa canzone (" + filenametemp + "): ") 
+                audiofile.tag.artist = Logic_Thread.searchArtist(artist)["name"]
             audiofile.tag.save()
 
-        artistInputTemp = artist
+        index = Logic_Thread.searchInJson(artist)
         
-        artist = Logic_Thread.searchArtist(artist)
-        while artist is None:
-            artist = GUI_Thread.pop_up_input("Chiedo scusa, non ho trovato nessun artista con questo nome(" + artistInputTemp + ") per questa canzone (" + filenametemp +  "), riprova: ")
+        if index != -1:
+            if data["artists"][index]["area"] == 'Italy':
+                songsITA.append(inputtemp)
+            else:
+                songsSTR.append(inputtemp)
+        else:
             artistInputTemp = artist
             artist = Logic_Thread.searchArtist(artist)
 
-            if artist is not None:
-                audiofile.tag.artist = artist
-                audiofile.tag.save()
+            while artist is None:
+                artist = GUI_Thread.pop_up_input("Chiedo scusa, non ho trovato nessun artista con questo nome(" + artistInputTemp + ") per questa canzone (" + filenametemp +  "), riprova: ")
+                artistInputTemp = artist
+                artist = Logic_Thread.searchArtist(artist)
 
-        if 'area' not in artist:
-            answ = GUI_Thread.pop_up_input("Origine del cantante " + artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
-            while answ != 'i' and answ != 's':
-                answ = GUI_Thread.pop_up_input("ERRORE, CARATTERE NON VALIDO! Origine del cantante " + artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
-            if answ == 'i':
+                if artist is not None:
+                    audiofile.tag.artist = artist
+                    audiofile.tag.save()
+
+            if 'area' not in artist:
+                answ = GUI_Thread.pop_up_input("Origine del cantante " + artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
+                while answ != 'i' and answ != 's':
+                    answ = GUI_Thread.pop_up_input("ERRORE, CARATTERE NON VALIDO! Origine del cantante " + artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
+                if answ == 'i':
+                    songsITA.append(inputtemp)
+                    Logic_Thread.addArtistToJson(artist["name"],"Italy")
+                elif answ == 's':
+                    songsSTR.append(inputtemp)
+                    Logic_Thread.addArtistToJson(artist["name"],"Foreign")
+            
+            elif(artist['area']['name'] == 'Italy'):
                 songsITA.append(inputtemp)
-            elif answ == 's':
+                Logic_Thread.addArtistToJson(artist["name"],"Italy")
+            else:
                 songsSTR.append(inputtemp)
-        elif(artist['area']['name'] == 'Italy'):
-            songsITA.append(inputtemp)
-        else:
-            songsSTR.append(inputtemp)
+                Logic_Thread.addArtistToJson(artist["name"],"Foreign")
 
     def sortSongs():
         global pref
