@@ -1,6 +1,8 @@
 import customtkinter as ctk
 from customtkinter import filedialog
 import tkinter as tk
+from ttkwidgets.autocomplete import AutocompleteCombobox
+
 import os
 import eyed3
 import urllib.request
@@ -10,10 +12,9 @@ import re
 import musicbrainzngs as mb
 from tinytag import TinyTag
 import time
-from tqdm import tqdm
 import threading
-import sys
 import json
+
 
 SONGS_PATH = ""
 ext = ".mp3"
@@ -50,6 +51,14 @@ class GUI_Thread(threading.Thread):
         global app
         global labelProgress
         global button_2
+        global lista 
+
+        lista = []
+
+        file = open("artists.json")
+        data = json.load(file)
+        for i in data["artists"]:
+            lista.append(i["name"])
 
         # Modes: "System" (standard), "Dark", "Light"
         ctk.set_appearance_mode("dark")
@@ -130,10 +139,34 @@ class GUI_Thread(threading.Thread):
         labelProgress.configure(text="0/" + str(len(songs)))
 
     def pop_up_input(message):
-        global dialog
-        dialog = ctk.CTkInputDialog(text=message, title="Attenzione!")
-        ######## AUTOCOMPLETE HERE ########
-        return dialog.get_input()
+        global value
+        """
+        SISTEMARE GRAFICA
+        """
+        top = tk.Toplevel(app)
+        top.geometry("150x100")
+        top.title("Attenzione!")
+
+        label = tk.Label(top,text=message)
+        label.bind('<Configure>' , lambda e: label.config(wraplength=label.winfo_width()-10))
+        label.grid()
+
+        entry = AutocompleteCombobox(top,width=30,completevalues=lista)
+        entry.grid()
+
+        def save_and_destroy():
+            global value
+            value = entry.get()
+            top.destroy()
+
+        button = tk.Button(top,text="OK",command=save_and_destroy)
+        button.grid()
+
+        top.bind("<Return>" , lambda event: save_and_destroy)
+
+        top.wait_window()  # attendi che la finestra venga chiusa
+
+        return value
     
     def choose_folder():
         global SONGS_PATH
@@ -196,9 +229,15 @@ class Logic_Thread:
         file = open(fileName)
         data = json.load(file)
         index = 0
+        ftArray = ["ft.","Ft.","FT.","fT."]
+
         for i in data["artists"]:
-            if re.search(re.sub('[^0-9a-zA-Z]+',' ',string), i["name"], re.IGNORECASE):
-                return index
+            if bool([ele for ele in ftArray if(ele in string)]):
+                if re.search(i["name"], re.sub('[^0-9a-zA-Z]+',' ',string).lower()[:string.index("ft")], re.IGNORECASE):
+                    return index
+            else:
+                if re.search(i["name"], re.sub('[^0-9a-zA-Z]+',' ',string), re.IGNORECASE):
+                    return index
             index += 1
         return -1
 
@@ -241,8 +280,9 @@ class Logic_Thread:
                 artist = GUI_Thread.pop_up_input("Per favore inserisci il nome dell'artista per questa canzone (" + filenametemp + "): ") 
                 audiofile.tag.artist = Logic_Thread.searchArtist(artist)["name"]
             audiofile.tag.save()
-
-        index = Logic_Thread.searchInJson(artist)
+            index = Logic_Thread.searchInJson(inputtemp)
+        else:
+            index = Logic_Thread.searchInJson(artist)
         
         if index != -1:
             if data["artists"][index]["area"] == 'Italy':

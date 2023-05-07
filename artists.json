@@ -49,10 +49,6 @@
             "area": "Foreign"
         },
         {
-            "name": "Colapesce e Dimartino",
-            "area": "Italy"
-        },
-        {
             "name": "Kodaline",
             "area": "Foreign"
         },
@@ -297,12 +293,8 @@
             "area": "Italy"
         },
         {
-            "name": "io2",
-            "area": "boh"
-        },
-        {
-            "name": "lui2",
-            "area": "marocchino"
+            "name": "Ni-Ni",
+            "area": "Foreign"
         }
     ]
 }
