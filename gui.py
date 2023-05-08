@@ -92,7 +92,7 @@ class GUI_Thread(threading.Thread):
         progressbar.pack(padx=20, pady=10)
         progressbar.set(0)
 
-        button_2 = ctk.CTkButton(master=app , command=Logic_Thread.sortSongs , text="Ordina canzoni")
+        button_2 = ctk.CTkButton(master=app , command=Logic_Thread.sortSongs , text="Ordina canzoni" , state="disabled")
         button_2.pack(pady=10, padx=10)
 
         # SCELTA DESTINAZIONE, FUSIONE E ORDINAMENTO
@@ -174,6 +174,7 @@ class GUI_Thread(threading.Thread):
         songs.clear()
         GUI_Thread.get_songs()
         GUI_Thread.write_textbox()
+        button_2.configure(state="normal")
 
 class Logic_Thread:
 
