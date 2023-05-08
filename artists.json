@@ -261,7 +261,7 @@
             "area": "Foreign"
         },
         {
-            "name": "Lu-Ni",
+            "name": "Lu Ni",
             "area": "Foreign"
         },
         {
@@ -291,10 +291,6 @@
         {
             "name": "Colapesce Dimartino",
             "area": "Italy"
-        },
-        {
-            "name": "Ni-Ni",
-            "area": "Foreign"
         }
     ]
 }

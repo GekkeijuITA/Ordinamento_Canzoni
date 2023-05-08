@@ -29,6 +29,7 @@ textbox = None
 progressbar = None
 app = None
 button_2 = None
+button_1 = None
 
 eyed3.log.setLevel(logging.CRITICAL)
 
@@ -51,6 +52,7 @@ class GUI_Thread(threading.Thread):
         global app
         global labelProgress
         global button_2
+        global button_1
         global lista 
 
         lista = []
@@ -116,6 +118,9 @@ class GUI_Thread(threading.Thread):
         app.update()
 
     def get_songs():
+        """
+        Prende tutte le canzoni nella cartella SONGS_PATH e le mette in un array.
+        """
         for filename in os.listdir(SONGS_PATH):
             f = os.path.join(SONGS_PATH, filename)
             if os.path.isfile(f) and f.endswith(ext):
@@ -127,12 +132,16 @@ class GUI_Thread(threading.Thread):
 
 
     def write_textbox():
+        """
+        Prende l'array songs e lo scrive nel textbox.
+        """
         i = 0
         textbox.configure(state="normal")
         textbox.delete(1.0, "end")
         if len(songs) == 0:
             textbox.insert("1.0", "Nessuna canzone trovata")
         else:
+            songs.sort(reverse=True)
             for song in songs:
                 textbox.insert(str(i)+".0", "• " + GUI_Thread.get_title(song)+"\n")
         textbox.configure(state="disabled")
@@ -184,14 +193,16 @@ class Logic_Thread:
     def run(self):
         Logic_Thread.sortSongs()
     
-    def sort(songs):
+    def sortCustom(songs):
         """
         Ordina un array di canzoni in modo che non ci siano due canzoni dello stesso artista in sequenza.
         """
+        global count
+
+        print("Ordinamento in corso...")
         random.shuffle(songs)  # mischia le canzoni in modo casuale
         sorted_songs = []
         last_artist = None
-        count = 0
 
         for song in songs:
             current_artist = Logic_Thread.searchArtist(song)
@@ -200,7 +211,8 @@ class Logic_Thread:
                 last_artist = current_artist
             else:
                 random.shuffle(songs)
-                return Logic_Thread.sort(songs)
+                return Logic_Thread.sortCustom(songs)
+
             count += 1
             songArray = "italiane"
             if(songs == songsSTR):
@@ -230,11 +242,12 @@ class Logic_Thread:
         file = open(fileName)
         data = json.load(file)
         index = 0
-        ftArray = ["ft.","Ft.","FT.","fT."]
+        ftArray = ["ft.","Ft.","FT.","fT.","Feat.","feat.","FEAT.","fEAT.","Featuring","featuring","FEATURING"]
 
         for i in data["artists"]:
-            if bool([ele for ele in ftArray if(ele in string)]):
-                if re.search(i["name"], re.sub('[^0-9a-zA-Z]+',' ',string).lower()[:string.index("ft")], re.IGNORECASE):
+            ft_element = [ele for ele in ftArray if(ele in i)]
+            if bool(ft_element):
+                if re.search(i["name"], re.sub('[^0-9a-zA-Z]+',' ',string).lower()[:string.index(ft_element)], re.IGNORECASE):
                     return index
             else:
                 if re.search(i["name"], re.sub('[^0-9a-zA-Z]+',' ',string), re.IGNORECASE):
@@ -332,6 +345,7 @@ class Logic_Thread:
         global SONGS_PATH
         global count
 
+        button_1.configure(state="disabled")
         button_2.configure(state="disabled")
 
         count = 0
@@ -347,9 +361,12 @@ class Logic_Thread:
             return
 
         print("Shuffling songsITA")
-        songsITA = Logic_Thread.sort(songsITA)
+        count = 0
+        songsITA = Logic_Thread.sortCustom(songsITA)
+
         print("Shuffling songsSTR")
-        songsSTR = Logic_Thread.sort(songsSTR)
+        count = 0
+        songsSTR = Logic_Thread.sortCustom(songsSTR)
 
         songs.clear()
         
@@ -369,10 +386,11 @@ class Logic_Thread:
                 is_italian = True
 
         count = 0
+        pref = 1
         for filename in songs:
             f = filename
             fileName = os.path.basename(f)
-
+            print(count , " - " , fileName)
             #Logic_Thread.storeArtists(f)
             # Split fileName into old prefix and rest of file name
             if divisor in fileName:
@@ -403,8 +421,16 @@ class Logic_Thread:
             pref += 1
             count += 1
             GUI_Thread.labelProgressUpdate("Sto ordinando le canzoni: " , len(songs) , count)
-        labelProgress.configure(text="Operazione completata!")
+
         button_2.configure(state="normal")
+        button_1.configure(state="normal")
+
+        songs.clear()
+        GUI_Thread.get_songs()
+        songs.sort(reverse=True)
+        GUI_Thread.write_textbox()
+
+        labelProgress.configure(text="Operazione completata!")
 
 # MAIN
 
