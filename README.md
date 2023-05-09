@@ -1,4 +1,4 @@
-# Ordinamento_Canzoni
+# Ordinamento_Canzoni :it:
 Programma per ordinare in modo casuale canzoni distinte alternando canzoni italiane e straniere, progetto per un amico</br>
 Utilizzo di ambiente Anaconda python 3.9
 ## Come funziona
