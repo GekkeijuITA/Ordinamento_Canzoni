@@ -18,3 +18,25 @@ Utilizzo di ambiente Anaconda python 3.9
 1. Il programma non è perfetto, potrebbe capitare che non riesca a trovare l'origine dell'autore corretto, in quel caso bisogna inserirla manualmente
 2. Il programma non è perfetto, potrebbe capitare che non riesca a trovare il nome dell'autore corretto, in quel caso bisogna inserirlo manualmente
 3. Se ci sono più canzoni straniere di quelle italiane (o viceversa), è possibile che il programma ordini più canzoni dello stesso autore oppure della stessa origine
+
+# Song_Sorter :uk:
+Program to randomly sort distinct songs while alternating between Italian and foreign songs, a project for a friend</br>
+Using Anaconda python 3.9 environmen
+## How it works
+1. On the main screen, first press the button at the top "Choose folder with songs to sort"
+2. Once the folder is selected, the program will display the songs found
+3. Press the button at the bottom "Sort songs" to start the sorting process
+4. Sometimes, due to the inability to find the author's origin, the program will ask for the author's origin with "i" for Italian and "s" for foreign, you must enter the single letter and not the whole word (italian/foreign)
+5. Sometimes it asks to enter the author's name if it cannot find it among those previously saved in the file called "artists.json"
+6. Above the "Sort songs" button, it will be written what the program is currently doing
+7. Once it has completed the operation, the sorted songs will be found: Italian and foreign sorted without songs from the same authors nearby
+## Additional information
+1. If you want to interrupt the process, it is advisable to do so during the file analysis phase by pressing the X in the top right (Windows) or top left (MacOs) (or in any other method available to close an application)
+2. Due to the terms of use of the MusicBrainz API (database used to determine the author's nationality), the program will take about 3 seconds per song for the analysis phase
+3. If you want to change the author's origin or name itself, simply search for it in the "artists.json" file and modify it
+    - Italy => italia, Foreign => foreign
+
+:warning: Warning :warning:
+1. The program is not perfect, it may happen that it cannot find the correct origin of the author, in that case it must be entered manually
+2. The program is not perfect, it may happen that it cannot find the correct name of the author, in that case it must be entered manually
+3. If there are more foreign songs than Italian ones (or vice versa), it is possible that the program sorts more songs by the same author or of the same origin.
