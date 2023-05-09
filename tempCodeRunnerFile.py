@@ -1,1 +1,0 @@
-print("Artista " + data["artists"][index] + " presente")
