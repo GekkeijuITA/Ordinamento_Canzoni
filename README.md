@@ -14,3 +14,7 @@ Utilizzo di ambiente Anaconda python 3.9
 2. A causa dei termini di uso delle API di MusicBrainz(database utilizzato per determinare la nazionalità dell'autore) il programma ci metterà circa 3 secondi per canzone per la fase di analisi
 3. Se si vuole cambiare l'origine dell'autore o il nome stesso, basta cercarlo nel file "artists.json" e modificarlo
     - Italy => italia , Foreign => straniero
+# :warning: Attenzione :warning:
+1. Il programma non è perfetto, potrebbe capitare che non riesca a trovare l'origine dell'autore corretto, in quel caso bisogna inserirla manualmente
+2. Il programma non è perfetto, potrebbe capitare che non riesca a trovare il nome dell'autore corretto, in quel caso bisogna inserirlo manualmente
+3. Se ci sono più canzoni straniere di quelle italiane (o viceversa), è possibile che il programma ordini più canzoni dello stesso autore oppure della stessa origine

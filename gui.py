@@ -150,14 +150,14 @@ class GUI_Thread(threading.Thread):
     def pop_up_input(message):
         global value
         """
-        SISTEMARE GRAFICA
+        Pop up per prendere in input il nome dell'autore con autocomplete, ritorna il valore inserito.
         """
         top = tk.Toplevel(app)
         top.geometry("150x100")
         top.title("Attenzione!")
 
         label = tk.Label(top,text=message)
-        label.bind('<Configure>' , lambda e: label.config(wraplength=label.winfo_width()-10))
+        label.bind('<Configure>' , lambda e: label.config(wraplength=top.winfo_width()-10))
         label.grid()
 
         entry = AutocompleteCombobox(top,width=30,completevalues=lista)
@@ -199,13 +199,14 @@ class Logic_Thread:
         """
         global count
 
-        print("Ordinamento in corso...")
         random.shuffle(songs)  # mischia le canzoni in modo casuale
         sorted_songs = []
         last_artist = None
 
+        count = 0
+
         for song in songs:
-            current_artist = Logic_Thread.searchArtist(song)
+            current_artist = Logic_Thread.searchInJson(song)
             if last_artist != current_artist:
                 sorted_songs.append(song)
                 last_artist = current_artist
@@ -223,6 +224,7 @@ class Logic_Thread:
 
 
     def searchArtist(author):
+        print("Searching artist..." , author)
         time.sleep(2)  # NECESSARIO
         # Imposta il tuo User-Agent
         mb.set_useragent("Ordinamento_Canzoni", "0.1")
@@ -238,7 +240,6 @@ class Logic_Thread:
         """
         Cerca nel file json se è presente l'autore
         """
-        print("Searching... " + re.sub('[^0-9a-zA-Z]+',' ',string))
         file = open(fileName)
         data = json.load(file)
         index = 0
@@ -355,7 +356,7 @@ class Logic_Thread:
             GUI_Thread.labelProgressUpdate("Analizzando le canzoni: " , len(songs) , count)
             Logic_Thread.storeArtists(song)
 
-        if len(songsITA) == 0 or len(songsSTR) == 0:
+        if len(songsITA) == 0 and len(songsSTR) == 0:
             print("Nessuna canzone trovata")
             GUI_Thread.pop_up("Nessuna canzone trovata", "Attenzione!")
             return
@@ -390,7 +391,6 @@ class Logic_Thread:
         for filename in songs:
             f = filename
             fileName = os.path.basename(f)
-            print(count , " - " , fileName)
             #Logic_Thread.storeArtists(f)
             # Split fileName into old prefix and rest of file name
             if divisor in fileName:
@@ -436,7 +436,6 @@ class Logic_Thread:
 
 if not connect():
     GUI_Thread.pop_up("Nessuna connessione a internet!" , "Errore")
-    print("No connection!")
 
 gui = GUI_Thread()
 logic = Logic_Thread()
