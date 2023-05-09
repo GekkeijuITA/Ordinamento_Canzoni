@@ -36,7 +36,7 @@ Using Anaconda python 3.9 environmen
 3. If you want to change the author's origin or name itself, simply search for it in the "artists.json" file and modify it
     - Italy => italia, Foreign => foreign
 
-:warning: Warning :warning:
+# :warning: Warning :warning:
 1. The program is not perfect, it may happen that it cannot find the correct origin of the author, in that case it must be entered manually
 2. The program is not perfect, it may happen that it cannot find the correct name of the author, in that case it must be entered manually
 3. If there are more foreign songs than Italian ones (or vice versa), it is possible that the program sorts more songs by the same author or of the same origin.
