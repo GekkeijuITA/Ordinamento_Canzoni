@@ -14,6 +14,7 @@ from tinytag import TinyTag
 import time
 import threading
 import json
+from fuzzywuzzy import fuzz
 
 
 SONGS_PATH = ""
@@ -57,7 +58,7 @@ class GUI_Thread(threading.Thread):
 
         lista = []
 
-        file = open("artists.json")
+        file = open("artists.json", encoding='utf-8')
         data = json.load(file)
         for i in data["artists"]:
             lista.append(i["name"])
@@ -146,6 +147,34 @@ class GUI_Thread(threading.Thread):
                 textbox.insert(str(i)+".0", "• " + GUI_Thread.get_title(song)+"\n")
         textbox.configure(state="disabled")
         labelProgress.configure(text="0/" + str(len(songs)))
+    
+    def pop_up_area(artistName):
+        top = tk.Toplevel(app)
+        top.geometry("220x190")
+        top.title("Attenzione!")
+
+        label = tk.Label(top,text="Seleziona l'area di provenienza dell'artista: " + artistName)
+        label.bind('<Configure>' , lambda e: label.config(wraplength=top.winfo_width()-10))
+        label.grid()
+
+        def save_and_destroy(valueB):
+            global value
+            value = valueB
+            top.destroy()
+
+        button_it = tk.Button(top,text="Italiano/a")
+        button_it.configure(command=lambda: save_and_destroy("i"))
+        button_it.grid()
+
+        button_str = tk.Button(top,text="Straniero/a")
+        button_str.configure(command=lambda: save_and_destroy("s"))
+        button_str.grid()
+
+        top.bind("<Return>" , lambda event: save_and_destroy)
+
+        top.wait_window()  # attendi che la finestra venga chiusa
+
+        return value    
 
     def pop_up_input(message):
         global value
@@ -153,7 +182,7 @@ class GUI_Thread(threading.Thread):
         Pop up per prendere in input il nome dell'autore con autocomplete, ritorna il valore inserito.
         """
         top = tk.Toplevel(app)
-        top.geometry("150x100")
+        top.geometry("220x190")
         top.title("Attenzione!")
 
         label = tk.Label(top,text=message)
@@ -205,6 +234,11 @@ class Logic_Thread:
 
         count = 0
 
+        # Controllo se l'array di canzoni contiene solo canzoni dello stesso artista
+        artists = set([Logic_Thread.searchInJson(song) for song in songs])
+        if len(artists) == 1:
+            return songs
+
         for song in songs:
             current_artist = Logic_Thread.searchInJson(song)
             if last_artist != current_artist:
@@ -228,12 +262,14 @@ class Logic_Thread:
         time.sleep(2)  # NECESSARIO
         # Imposta il tuo User-Agent
         mb.set_useragent("Ordinamento_Canzoni", "0.1")
-        # Cerca gli artisti con il nome "The Beatles"
-        result = mb.search_artists(author)
+        # Esegui la ricerca dell'artista
+        result = mb.search_artists(author, area="Italy")
+        if not result["artist-list"]:
+            result = mb.search_artists(author)
         # Recupera le informazioni sull'artista utilizzando il primo risultato della ricerca
         artist_id = result["artist-list"][0]["id"]
         artist_info = mb.get_artist_by_id(artist_id)
-        # Stampa il nome dell'artista e la sua nazionalità
+
         return artist_info['artist']
 
     def searchInJson(string,fileName="artists.json"):
@@ -245,17 +281,22 @@ class Logic_Thread:
         index = 0
         ftArray = ["ft.","Ft.","FT.","fT.","Feat.","feat.","FEAT.","fEAT.","Featuring","featuring","FEATURING"]
 
+        # Normalize the input string
+        normalized_string = re.sub('[^0-9a-zA-Z]+',' ',string.lower()).replace(" ", "")
+
+        # Try to match the normalized string to the artist names in the JSON file
         for i in data["artists"]:
             ft_element = [ele for ele in ftArray if(ele in i)]
             if bool(ft_element):
-                if re.search(i["name"], re.sub('[^0-9a-zA-Z]+',' ',string).lower()[:string.index(ft_element)], re.IGNORECASE):
+                if fuzz.partial_ratio(re.sub('[^0-9a-zA-Z]+',' ',i["name"].lower()).replace(" ", ""), normalized_string) >= 85:
                     return index
             else:
-                if re.search(i["name"], re.sub('[^0-9a-zA-Z]+',' ',string), re.IGNORECASE):
+                if fuzz.partial_ratio(re.sub('[^0-9a-zA-Z]+',' ',i["name"].lower()).replace(" ", ""), normalized_string) >= 85:
                     return index
             index += 1
-        return -1
 
+        return -1
+    
     def addArtistToJson(name,country,fileName="artists.json"):
         """
         Aggiunge l'artista nella nostra "cache" senza ripetizioni
@@ -318,7 +359,7 @@ class Logic_Thread:
                     audiofile.tag.save()
 
             if 'area' not in artist:
-                answ = GUI_Thread.pop_up_input("Origine del cantante " + artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
+                answ = GUI_Thread.pop_up_area(artist["name"])
                 while answ != 'i' and answ != 's':
                     answ = GUI_Thread.pop_up_input("ERRORE, CARATTERE NON VALIDO! Origine del cantante " + artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
                 if answ == 'i':
@@ -327,7 +368,6 @@ class Logic_Thread:
                 elif answ == 's':
                     songsSTR.append(inputtemp)
                     Logic_Thread.addArtistToJson(artist["name"],"Foreign")
-            
             elif(artist['area']['name'] == 'Italy'):
                 songsITA.append(inputtemp)
                 Logic_Thread.addArtistToJson(artist["name"],"Italy")
@@ -348,6 +388,9 @@ class Logic_Thread:
 
         button_1.configure(state="disabled")
         button_2.configure(state="disabled")
+
+        songs.clear()
+        GUI_Thread.get_songs()
 
         count = 0
 
@@ -371,27 +414,29 @@ class Logic_Thread:
 
         songs.clear()
         
-        is_italian = True
-        while songsITA or songsSTR:
-            if len(songsITA) > 0:
-                if is_italian:
-                    songs.append(songsITA.pop(0))
-                    is_italian = False
-            else:
-                is_italian = False
-            if len(songsSTR) > 0:
-                if not is_italian:
-                    songs.append(songsSTR.pop(0))
-                    is_italian = True
-            else:
-                is_italian = True
+        i = 0
+        j = 0
+
+        while i < len(songsITA) and j < len(songsSTR):
+            songs.append(songsITA[i])
+            i += 1
+            songs.append(songsSTR[j])
+            j += 1
+
+        while i < len(songsITA):
+            songs.append(songsITA[i])
+            i += 1
+        
+        while j < len(songsSTR):
+            songs.append(songsSTR[j])
+            j += 1
+            
 
         count = 0
         pref = 1
         for filename in songs:
             f = filename
             fileName = os.path.basename(f)
-            #Logic_Thread.storeArtists(f)
             # Split fileName into old prefix and rest of file name
             if divisor in fileName:
                 oldPrefix, restName = fileName.split(divisor, maxsplit=1)
@@ -434,7 +479,7 @@ class Logic_Thread:
 
 # MAIN
 
-if not connect():
+while not connect():
     GUI_Thread.pop_up("Nessuna connessione a internet!" , "Errore")
 
 gui = GUI_Thread()
