@@ -104,9 +104,6 @@ class GUI_Thread(threading.Thread):
             
             logic_thread = Logic_Thread(self.stop_event)
 
-            button_3 = ctk.CTkButton(master=app, command=logic_thread.stop_thread, text="Interrompi")
-            button_3.pack(pady=10, padx=10)
-
             app.protocol("WM_DELETE_WINDOW", on_closing)
 
             app.mainloop()
@@ -244,9 +241,6 @@ class Logic_Thread(threading.Thread):
     def run(self):
         while not self.stop_event.is_set():
             Logic_Thread.sortSongs()
-    
-    def stop_thread(self):
-        self.stop_event.set()
     
     def sortCustom(songs):
         """
