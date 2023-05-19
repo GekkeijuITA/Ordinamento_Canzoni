@@ -2,3 +2,5 @@ Canzoni/
 Prova/
 .DS_Store
 __pycache__/
+build/
+dist/

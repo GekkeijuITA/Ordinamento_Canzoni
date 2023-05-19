@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from customtkinter import filedialog
 import tkinter as tk
+from tkinter import messagebox
 from ttkwidgets.autocomplete import AutocompleteCombobox
 
 import os
@@ -31,6 +32,7 @@ progressbar = None
 app = None
 button_2 = None
 button_1 = None
+fileJson = "artists.json"
 
 eyed3.log.setLevel(logging.CRITICAL)
 
@@ -43,71 +45,76 @@ def connect(host='http://google.com'):
 
 class GUI_Thread(threading.Thread):
 
-    def __init__(self):
-        threading.Thread.__init__(self)
+    def __init__(self, stop_event):
+        super().__init__()
+        self.stop_event = stop_event
     
     def run(self):
-        global dialog
-        global textbox
-        global progressbar
-        global app
-        global labelProgress
-        global button_2
-        global button_1
-        global lista 
+        while not self.stop_event.is_set():
+            global dialog
+            global textbox
+            global progressbar
+            global app
+            global labelProgress
+            global button_2
+            global button_1
+            global lista 
 
-        lista = []
+            lista = []
+            
+            file = open(fileJson, encoding='utf-8')
+            data = json.load(file)
+            for i in data["artists"]:
+                lista.append(i["name"])
 
-        file = open("artists.json", encoding='utf-8')
-        data = json.load(file)
-        for i in data["artists"]:
-            lista.append(i["name"])
+            # Modes: "System" (standard), "Dark", "Light"
+            ctk.set_appearance_mode("dark")
+            # Themes: "blue" (standard), "green", "dark-blue"
+            ctk.set_default_color_theme("blue")
 
-        # Modes: "System" (standard), "Dark", "Light"
-        ctk.set_appearance_mode("dark")
-        # Themes: "blue" (standard), "green", "dark-blue"
-        ctk.set_default_color_theme("blue")
+            app = ctk.CTk()
+            app.geometry("600x480")
+            app.title("Ordinamento Canzoni")
 
-        app = ctk.CTk()
-        app.geometry("600x480")
-        app.title("Ordinamento Canzoni")
+            frame_1 = ctk.CTkFrame(master=app)
+            frame_1.pack(pady=20, padx=60, fill="both", expand=True)
 
-        frame_1 = ctk.CTkFrame(master=app)
-        frame_1.pack(pady=20, padx=60, fill="both", expand=True)
+            label_1 = ctk.CTkLabel(
+                master=frame_1, justify=ctk.LEFT, text="Ordina canzoni", font=("Roboto", 24))
+            label_1.pack(pady=10, padx=10)
 
-        label_1 = ctk.CTkLabel(
-            master=frame_1, justify=ctk.LEFT, text="Ordina canzoni", font=("Roboto", 24))
-        label_1.pack(pady=10, padx=10)
+            # SCELTA CANZONI
 
-        # SCELTA CANZONI
+            button_1 = ctk.CTkButton(
+                master=app, command=GUI_Thread.choose_folder, text="Scegli cartella con le canzoni da ordinare")
+            button_1.pack(pady=10, padx=10)
 
-        button_1 = ctk.CTkButton(
-            master=app, command=GUI_Thread.choose_folder, text="Scegli cartella con le canzoni da ordinare")
-        button_1.pack(pady=10, padx=10)
+            textbox = ctk.CTkTextbox(master=app)
+            textbox.pack(pady=10, padx=10, fill="both", expand=True)
 
-        textbox = ctk.CTkTextbox(master=app)
-        textbox.pack(pady=10, padx=10, fill="both", expand=True)
+            # BARRA PROGRESSO
+            labelProgress = ctk.CTkLabel(master=app , text="0/0")
+            labelProgress.pack(pady=10, padx=10)
+            progressbar = ctk.CTkProgressBar(master=app)
+            progressbar.pack(padx=20, pady=10)
+            progressbar.set(0)
 
-        # BARRA PROGRESSO
-        labelProgress = ctk.CTkLabel(master=app , text="0/0")
-        labelProgress.pack(pady=10, padx=10)
-        progressbar = ctk.CTkProgressBar(master=app)
-        progressbar.pack(padx=20, pady=10)
-        progressbar.set(0)
+            button_2 = ctk.CTkButton(master=app , command=Logic_Thread.sortSongs , text="Ordina canzoni" , state="disabled")
+            button_2.pack(pady=10, padx=10)
+            
+            logic_thread = Logic_Thread(self.stop_event)
 
-        button_2 = ctk.CTkButton(master=app , command=Logic_Thread.sortSongs , text="Ordina canzoni" , state="disabled")
-        button_2.pack(pady=10, padx=10)
+            button_3 = ctk.CTkButton(master=app, command=logic_thread.stop_thread, text="Interrompi")
+            button_3.pack(pady=10, padx=10)
 
-        # SCELTA DESTINAZIONE, FUSIONE E ORDINAMENTO
+            app.protocol("WM_DELETE_WINDOW", on_closing)
 
-        app.mainloop()
+            app.mainloop()
 
-        pass
+            pass
 
     def pop_up(message , title):
-        global dialog
-        dialog = ctk.CTkInputDialog(text=message, title=title)
-        dialog.get_input()
+        messagebox.showinfo(title=title, message=message)
 
 
     def labelProgressUpdate(message , tot , countNum):
@@ -149,9 +156,17 @@ class GUI_Thread(threading.Thread):
         labelProgress.configure(text="0/" + str(len(songs)))
     
     def pop_up_area(artistName):
+        global value
+        value = ""
+
         top = tk.Toplevel(app)
         top.geometry("220x190")
         top.title("Attenzione!")
+
+        x = int(app.winfo_x() + (app.winfo_width() / 2 - top.winfo_width()))
+        y = int(app.winfo_y() + (app.winfo_height() / 2 - top.winfo_height()))
+
+        top.geometry("+{}+{}".format(x, y))
 
         label = tk.Label(top,text="Seleziona l'area di provenienza dell'artista: " + artistName)
         label.bind('<Configure>' , lambda e: label.config(wraplength=top.winfo_width()-10))
@@ -178,12 +193,18 @@ class GUI_Thread(threading.Thread):
 
     def pop_up_input(message):
         global value
+        value = ""
         """
         Pop up per prendere in input il nome dell'autore con autocomplete, ritorna il valore inserito.
         """
         top = tk.Toplevel(app)
         top.geometry("220x190")
         top.title("Attenzione!")
+
+        x = int(app.winfo_x() +( app.winfo_width() / 2 - top.winfo_width()))
+        y = int(app.winfo_y() +( app.winfo_height() / 2 - top.winfo_height()))
+
+        top.geometry("+{}+{}".format(x, y))
 
         label = tk.Label(top,text=message)
         label.bind('<Configure>' , lambda e: label.config(wraplength=top.winfo_width()-10))
@@ -214,13 +235,18 @@ class GUI_Thread(threading.Thread):
         GUI_Thread.write_textbox()
         button_2.configure(state="normal")
 
-class Logic_Thread:
+class Logic_Thread(threading.Thread):
 
-    def __init__(self):
-        threading.Thread.__init__(self)
+    def __init__(self, stop_event):
+        super().__init__()
+        self.stop_event = stop_event
 
     def run(self):
-        Logic_Thread.sortSongs()
+        while not self.stop_event.is_set():
+            Logic_Thread.sortSongs()
+    
+    def stop_thread(self):
+        self.stop_event.set()
     
     def sortCustom(songs):
         """
@@ -272,7 +298,7 @@ class Logic_Thread:
 
         return artist_info['artist']
 
-    def searchInJson(string,fileName="artists.json"):
+    def searchInJson(string,fileName=fileJson):
         """
         Cerca nel file json se è presente l'autore
         """
@@ -297,7 +323,7 @@ class Logic_Thread:
 
         return -1
     
-    def addArtistToJson(name,country,fileName="artists.json"):
+    def addArtistToJson(name,country,fileName=fileJson):
         """
         Aggiunge l'artista nella nostra "cache" senza ripetizioni
         """
@@ -320,11 +346,13 @@ class Logic_Thread:
         filemp3 = TinyTag.get(inputtemp)
         artist = filemp3.artist
         audiofile = eyed3.load(inputtemp)
+        if artist == None or artist == "":
+            artist = audiofile.tag.artist
 
         if not audiofile.tag:
             audiofile.initTag()
 
-        file = open("artists.json")
+        file = open(fileJson)
         data = json.load(file)
 
         if(artist == None or artist == ""):
@@ -333,7 +361,10 @@ class Logic_Thread:
             if index != -1:
                 audiofile.tag.artist = data["artists"][index]["name"]
             else:    
+                print("Sono qui: " + audiofile.tag.artist)
                 artist = GUI_Thread.pop_up_input("Per favore inserisci il nome dell'artista per questa canzone (" + filenametemp + "): ") 
+                while artist == "":
+                    artist = GUI_Thread.pop_up_input("Per favore inserisci il nome dell'artista per questa canzone (" + filenametemp + "): ")
                 audiofile.tag.artist = Logic_Thread.searchArtist(artist)["name"]
             audiofile.tag.save()
             index = Logic_Thread.searchInJson(inputtemp)
@@ -351,6 +382,8 @@ class Logic_Thread:
 
             while artist is None:
                 artist = GUI_Thread.pop_up_input("Chiedo scusa, non ho trovato nessun artista con questo nome(" + artistInputTemp + ") per questa canzone (" + filenametemp +  "), riprova: ")
+                while artist == "":
+                    artist = GUI_Thread.pop_up_input("Chiedo scusa, non ho trovato nessun artista con questo nome(" + artistInputTemp + ") per questa canzone (" + filenametemp +  "), riprova: ")
                 artistInputTemp = artist
                 artist = Logic_Thread.searchArtist(artist)
 
@@ -360,8 +393,8 @@ class Logic_Thread:
 
             if 'area' not in artist:
                 answ = GUI_Thread.pop_up_area(artist["name"])
-                while answ != 'i' and answ != 's':
-                    answ = GUI_Thread.pop_up_input("ERRORE, CARATTERE NON VALIDO! Origine del cantante " + artist["name"] + " sconosciuta, è italiano(i) o straniero(s): ")
+                while answ != 'i' and answ != 's' :
+                    answ = GUI_Thread.pop_up_area(artist["name"])
                 if answ == 'i':
                     songsITA.append(inputtemp)
                     Logic_Thread.addArtistToJson(artist["name"],"Italy")
@@ -478,12 +511,27 @@ class Logic_Thread:
         labelProgress.configure(text="Operazione completata!")
 
 # MAIN
-
 while not connect():
     GUI_Thread.pop_up("Nessuna connessione a internet!" , "Errore")
 
-gui = GUI_Thread()
-logic = Logic_Thread()
+# Ricava il percorso della directory in cui si trova il file eseguibile
+exe_dir = os.path.dirname(os.path.abspath(__file__))
 
-gui.run()
-logic.run()
+# Crea il percorso completo del file "artists.json"
+artists_path = os.path.join(exe_dir, fileJson)
+
+if not os.path.exists(artists_path):
+    with open(artists_path, "w", encoding="utf-8") as f:
+        json.dump({"artists": []}, f)
+
+stop_event = threading.Event()
+
+gui = GUI_Thread(stop_event)
+logic = Logic_Thread(stop_event)
+
+gui.start()
+logic.start()
+
+def on_closing():
+    stop_event.set()
+    app.quit()
