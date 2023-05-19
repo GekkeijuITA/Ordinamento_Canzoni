@@ -340,7 +340,8 @@ class Logic_Thread(threading.Thread):
         filemp3 = TinyTag.get(inputtemp)
         artist = filemp3.artist
         audiofile = eyed3.load(inputtemp)
-        if artist == None or artist == "":
+
+        if (artist == None or artist == "") and audiofile.tag:
             artist = audiofile.tag.artist
 
         if not audiofile.tag:
@@ -354,8 +355,7 @@ class Logic_Thread(threading.Thread):
             index = Logic_Thread.searchInJson(filenametemp)
             if index != -1:
                 audiofile.tag.artist = data["artists"][index]["name"]
-            else:    
-                print("Sono qui: " + audiofile.tag.artist)
+            else:
                 artist = GUI_Thread.pop_up_input("Per favore inserisci il nome dell'artista per questa canzone (" + filenametemp + "): ") 
                 while artist == "":
                     artist = GUI_Thread.pop_up_input("Per favore inserisci il nome dell'artista per questa canzone (" + filenametemp + "): ")
@@ -417,6 +417,8 @@ class Logic_Thread(threading.Thread):
         button_2.configure(state="disabled")
 
         songs.clear()
+        songsITA.clear()
+        songsSTR.clear()
         GUI_Thread.get_songs()
 
         count = 0
