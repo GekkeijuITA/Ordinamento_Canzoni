@@ -5,7 +5,7 @@ Utilizzo di ambiente Anaconda python 3.9
 1. Nella schermata principale premere per prima cosa il tasto in alto "Scegli cartella con le canzoni da ordinare"
 2. Una volta scelta la cartella il programma stamperà le canzoni trovate
 3. Premere il bottone in basso "Ordina canzoni" per iniziare il processo di ordinamento
-4. A volte, a causa del fatto che non si riesca a trovare l'origine dell'autore, il programma chiederà l'origine dell'autore con "i" per italiano e "s" per straniero, bisogna digitare la singola lettera e non tutta la parola (italiano/straniero)
+4. A volte, a causa del fatto che non si riesca a trovare l'origine dell'autore, il programma chiederà l'origine dell'autore, premere il tasto corrispondente
 5. A volte invece chiede di inserire il nome dell'autore se non riesce a trovarlo tra quelli precedentemente salvati nel file denominato "artists.json"
 6. Sopra al bottone "Ordina canzoni" sarà scritto cosa sta facendo il programma in quel momento
 7. Una volta che ha completato l'operazione si troveranno le canzoni ordinate: italiane e straniere ordinate senza canzoni degli stessi autori vicini
@@ -26,7 +26,7 @@ Using Anaconda python 3.9 environmen
 1. On the main screen, first press the button at the top "Choose folder with songs to sort"
 2. Once the folder is selected, the program will display the songs found
 3. Press the button at the bottom "Sort songs" to start the sorting process
-4. Sometimes, due to the inability to find the author's origin, the program will ask for the author's origin with "i" for Italian and "s" for foreign, you must enter the single letter and not the whole word (italian/foreign)
+4. Sometimes, due to the inability to find the author's origin, the program will ask for the author's origin, press the corresponding button
 5. Sometimes it asks to enter the author's name if it cannot find it among those previously saved in the file called "artists.json"
 6. Above the "Sort songs" button, it will be written what the program is currently doing
 7. Once it has completed the operation, the sorted songs will be found: Italian and foreign sorted without songs from the same authors nearby
